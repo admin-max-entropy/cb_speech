@@ -23,6 +23,9 @@ for item in doc.findAll('item'):
     if author != "Williams, John C." or series != "Speech":
         continue
 
+    if container.find_one(dict(url=link)) is not None:
+        continue
+
     info = requests.get(link, headers=headers)
     info_soup = bs4.BeautifulSoup(info.text, 'html.parser')
     links = info_soup.findAll('a', href=True)
