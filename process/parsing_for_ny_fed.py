@@ -1,7 +1,7 @@
 import datetime
 import bs4
 import requests
-import parsing_utils
+from src import parsing_utils
 import src.data_utils
 import config
 
@@ -23,9 +23,6 @@ for item in doc.findAll('item'):
     if author != "Williams, John C." or series != "Speech":
         continue
 
-    if container.find_one(dict(url=link)) is not None:
-        continue
-
     info = requests.get(link, headers=headers)
     info_soup = bs4.BeautifulSoup(info.text, 'html.parser')
     links = info_soup.findAll('a', href=True)
@@ -38,6 +35,10 @@ for item in doc.findAll('item'):
         date_str =item.find('dc:date').get_text()
         date = datetime.datetime.strptime(date_str, "%Y-%m-%d")
         target_link = row.text
+
+        if container.find_one(dict(url=target_link)) is not None:
+            continue
+
         content = requests.get(target_link)
         content_soup = bs4.BeautifulSoup(content.text, 'html.parser')
         tags = content_soup.find_all("div", class_="ts-article-text")[0]

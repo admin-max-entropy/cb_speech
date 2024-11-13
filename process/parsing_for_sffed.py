@@ -1,9 +1,8 @@
 import requests
 import bs4
-import parsing_utils
+import src.parsing_utils
 import config
 import src.data_utils
-import pytz
 from datetime import datetime
 
 container = src.data_utils.fed_speech_collection()
@@ -34,7 +33,7 @@ for item in items:
             break
         else:
             full_text += sub_soup.text + "\n"
-    summary = parsing_utils.generate_summary(full_text)
+    summary = src.parsing_utils.generate_summary(full_text)
     print(len(full_text), len(summary))
 
     container.insert_one(dict(url=link, summary=summary, full_text=full_text,

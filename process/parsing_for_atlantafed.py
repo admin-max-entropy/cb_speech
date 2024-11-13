@@ -1,10 +1,10 @@
 import requests
 import bs4
-import parsing_utils
 import config
 import src.data_utils
 import pytz
 from datetime import datetime
+from src import parsing_utils
 
 container = src.data_utils.fed_speech_collection()
 
@@ -14,15 +14,17 @@ doc = bs4.BeautifulSoup(r.text, 'html.parser')
 for item in doc.findAll('item'):
     links = item.find("guid").previous_siblings
     for link in links:
-        link = link.strip()
-        link = link.replace("\r\n", "")
+
+        if link.text in ["\n", ""]:
+            break
+        link = link.text.strip()
         title = item.find('title').text
         date = item.find('pubdate').text
         date = datetime.strptime(date, f"%A, %d %b %Y %H:%M:%S EST")
         date = date.replace(tzinfo=pytz.timezone('US/Eastern'))
         description = item.find('description').text
         if container.find_one(dict(url=link)) is not None:
-            continue
+            break
         content = requests.get(link)
         content_soup = bs4.BeautifulSoup(content.text, 'html.parser')
         next_info = content_soup.next

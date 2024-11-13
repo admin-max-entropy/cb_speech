@@ -12,6 +12,9 @@ def master_database():
 def fed_speech_collection():
     return master_database()["fed_speech_summary"]
 
+def fed_speech_structured_output():
+    return master_database()["fed_speech_structured_output"]
+
 def convert_fed_rss_time(input_time):
 
     if "GMT" in input_time:

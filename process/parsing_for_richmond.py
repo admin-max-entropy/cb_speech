@@ -39,6 +39,7 @@ for item in children.find_all(class_="data__row"):
         full_text += row.text + "\n"
 
     summary = src.parsing_utils.generate_summary(full_text)
+    print(len(summary), len(full_text))
     container.insert_one(dict(url=link, summary=summary, full_text=full_text,
                               date=pub_date, author=config.TBARKIN,
                               title=title, description=description))

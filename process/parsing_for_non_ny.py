@@ -1,10 +1,10 @@
-import parsing_utils
+import src.parsing_utils
 import src.data_utils
 import src.parsing_utils
 import feedparser
 
 container = src.data_utils.fed_speech_collection()
-container.drop()
+#container.drop()
 
 for author, link in src.parsing_utils.rss_links().items():
     feed = feedparser.parse(link)
