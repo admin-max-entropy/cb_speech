@@ -1,4 +1,3 @@
-OPEN_API_KEY = ""
 MODEL = "gpt-4o-mini"
 
 
