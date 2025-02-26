@@ -10,7 +10,7 @@ from pinecone import Pinecone
 openai.api_key = config.OPEN_API_KEY
 
 def get_pc():
-    pc = Pinecone(api_key="pcsk_36hKfz_6GL8ztjrsZZicZyCdeUZkEV1D3fBAcooULof9ZZ8zSq9wjjTA6BNKoE1en36KRU")
+    pc = Pinecone(api_key="")
     return pc
 
 

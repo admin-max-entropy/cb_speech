@@ -1,4 +1,4 @@
-OPEN_API_KEY = "sk-JlYjtht_k5SisaAGDEIdc5ftKc9bxbXcn7Lq7B7gD9T3BlbkFJxF75uV0M0FXfVbtHogAnFNAmXffZ_oJFJhv9d0kFAA"
+OPEN_API_KEY = ""
 MODEL = "gpt-4o-mini"
 
 

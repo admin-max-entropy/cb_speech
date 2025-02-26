@@ -4,8 +4,8 @@ from datetime import datetime
 import pytz
 
 def master_database():
-    db_password = "DmUKR0yONjMExVNN"
-    uri = f"mongodb+srv://admin:{db_password}@cluster0.vg3mk.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+    db_password = ""
+    uri = ""
     client = MongoClient(uri, server_api=ServerApi('1'))
     return client["max_entropy"]
 

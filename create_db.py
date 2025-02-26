@@ -1,6 +1,6 @@
 from pinecone import Pinecone, ServerlessSpec
 
-pc = Pinecone(api_key="pcsk_36hKfz_6GL8ztjrsZZicZyCdeUZkEV1D3fBAcooULof9ZZ8zSq9wjjTA6BNKoE1en36KRU")
+pc = Pinecone(api_key="")
 index_name = "maxent"
 
 pc.create_index(
