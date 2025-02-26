@@ -1,53 +1,79 @@
 import datetime
 import bs4
 import requests
+from numpy.ma.extras import row_stack
+from urllib3.util.response import assert_header_parsing
+
 from src import parsing_utils
 import src.data_utils
 import config
 
 container = src.data_utils.fed_speech_collection()
-headers = {
-    "x-api-key": "408ab2cb55365557e2a47462e5d782b1",
-    "User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:106.0) Gecko/20100101 Firefox/106.0'
-}
-r = requests.get("https://fedinprint.org/rss/newyork.rss", headers=headers)
-doc = bs4.BeautifulSoup(r.text, 'xml')
+# container.drop()
 
-for item in doc.findAll('item'):
-    title = item.find('title').get_text()
-    author = item.find('dc:creator').get_text()
-    link = item.find('link').get_text()
-    series = item.find('bibo:series').get_text()
-    description = item.find('description').get_text()
+def __find_info(target_link):
 
-    if author != "Williams, John C." or series != "Speech":
+    if "speeches" not in target_link:
+        return None
+
+    content = requests.get(target_link)
+    content_soup = bs4.BeautifulSoup(content.text, 'html.parser')
+    contact_infos = content_soup.findAll("div", class_="ts-contact-info")
+
+    for row in contact_infos:
+        href_info = row.find(href=True)
+        if href_info is not None:
+            author = href_info.text
+            if author in ["John C. Williams", "Roberto Perli"]:
+                date = bs4.BeautifulSoup(contact_infos[0].text).text.replace("\r\n", "")
+                date = date.split("Posted")[0]
+                date = date.strip()
+                print(date)
+                date = datetime.datetime.strptime(date, "%B %d, %Y")
+
+                if date <= datetime.datetime(2016, 1, 1):
+                    return None
+
+                if author == "John C. Williams":
+                    author = config.JWILLAIM
+                else:
+                    author = config.PERLI
+                return author, date
+
+    return None
+
+speeches = requests.get("https://www.newyorkfed.org/press/#speeches")
+doc = bs4.BeautifulSoup(speeches.text, 'xml')
+sub_title = doc.findAll(class_="tablTitle")
+
+for item in sub_title:
+    link_info = item.find("a", href=True)
+    if link_info is None:
+        continue
+    title = link_info.text
+    target_link = link_info.attrs["href"]
+    if "speeches" not in target_link:
         continue
 
-    info = requests.get(link, headers=headers)
-    info_soup = bs4.BeautifulSoup(info.text, 'html.parser')
-    links = info_soup.findAll('a', href=True)
+    target_link = "https://www.newyorkfed.org/" + target_link
+    if container.find_one(dict(url=target_link)) is not None:
+        continue
 
-    for row in links:
+    author_info = __find_info(target_link)
+    if author_info is None:
+        continue
 
-        if "https://www.newyorkfed.org/newsevents/speeches" not in row.text:
-            continue
+    author, date = author_info
+    content = requests.get(target_link)
+    content_soup = bs4.BeautifulSoup(content.text, 'html.parser')
+    tags = content_soup.find_all("div", class_="ts-article-text")[0]
+    sub_tags = tags.find_all("p", class_=None)
+    full_text = ""
+    for tag in sub_tags:
+        full_text += tag.text + "\n"
 
-        date_str =item.find('dc:date').get_text()
-        date = datetime.datetime.strptime(date_str, "%Y-%m-%d")
-        target_link = row.text
+    summary = parsing_utils.generate_summary(full_text)
+    print(author, date, len(full_text), len(summary))
 
-        if container.find_one(dict(url=target_link)) is not None:
-            continue
-
-        content = requests.get(target_link)
-        content_soup = bs4.BeautifulSoup(content.text, 'html.parser')
-        tags = content_soup.find_all("div", class_="ts-article-text")[0]
-        sub_tags = tags.find_all("p", class_=None)
-        full_text = ""
-        for tag in sub_tags:
-            full_text += tag.text + "\n"
-        print(len(full_text))
-        summary = parsing_utils.generate_summary(full_text)
-        print(len(summary))
-        container.insert_one(dict(url=target_link, summary=summary, full_text=full_text,
-                                  date=date, author=config.JWILLAIM, title=title, description=description))
+    container.insert_one(dict(url=target_link, summary=summary, full_text=full_text,
+                              date=date, author=author, title=title, description=""))

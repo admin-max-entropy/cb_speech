@@ -30,7 +30,11 @@ for item in children.find_all(class_="data__row"):
     content = bs4.BeautifulSoup(requests.get(f"https://www.richmondfed.org{link}").text, "html.parser")
     main = content.find("main")
     speech = main.find(class_="tmplt speech")
-    title = speech.find(class_="tmplt__title").text
+    title = speech.find(class_="tmplt__title")
+    if title is None:
+        title = ""
+    else:
+        title = title.text
 
     main_content = speech.find(class_="tmplt__content").find_all("p", class_=None)
 

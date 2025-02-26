@@ -13,6 +13,7 @@ summarization_prompt = '''
     - keywords: a list of keywords 
     - views: array of view on inflation, labor market, balance sheet, monetary policy, r star, banking regulation and economic growth
     Note: If there is no view for certain topic, just leave it empty. For the keywords, please extract the keywords of the speech, rather than the author.
+    Also, please pay attention to Federal Reserve facilities, such as SRF. For inflation, please make it detailed for CPI, PPI, etc.
 '''
 
 class Views(BaseModel):
@@ -57,12 +58,12 @@ def get_summary(full_text):
 
 container = src.data_utils.fed_speech_collection()
 output_container = src.data_utils.fed_speech_structured_output()
-# output_container.drop()
+#output_container.drop()
 
 for document in container.find():
     full_text = document.get("full_text")
     url = document.get("url")
-    if output_container.find(dict(url=url)) is not None:
+    if output_container.find_one(dict(url=url)) is not None:
         continue
     summary = get_summary(full_text)
     full_info = summary
